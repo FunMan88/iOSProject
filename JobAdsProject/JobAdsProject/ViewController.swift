@@ -21,26 +21,56 @@ class JobAdCell : UITableViewCell {
     @IBOutlet weak var createdLabel: UILabel!
 }
 
-class ViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
+public class JobTitleSearchController : UISearchController {
+    public var jobTitleSearchBar = UISearchBar()
+
+    override public var searchBar: UISearchBar {
+        get {
+            return jobTitleSearchBar
+        }
+    }
+
+}
+
+class ViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UISearchResultsUpdating, UISearchBarDelegate {
+   
     var jobResult: JobAdResult = JobAdResult(results: [])
     
     @IBOutlet weak var jobAdsTableView: UITableView!
+    @IBOutlet weak var jobTitleSearchBar: UISearchBar!
+    @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
+    
+    let searchController = JobTitleSearchController()
+    
+    var isSearchBarEmpty: Bool {
+      return searchController.searchBar.text?.isEmpty ?? true
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        activityIndicator.hidesWhenStopped = true
+        
         jobAdsTableView.delegate = self
         jobAdsTableView.dataSource = self
-        loadJobAds()
+        
+        searchController.jobTitleSearchBar = jobTitleSearchBar
+        searchController.searchResultsUpdater = self
+        searchController.searchBar.delegate = self
+        definesPresentationContext = true
+        
+        loadJobAds(jobTitle: nil)
     }
     
-    func loadJobAds() {
-        //print("Currency: " + currency)
+    func loadJobAds(jobTitle: String?) {
+        print("job title: " + (jobTitle ?? ""))
         let session = URLSession.shared
         
-        //currently only fetching 20 results -> results_per_page
-        let url = URL(string: "http://api.adzuna.com/v1/api/jobs/gb/search/1?app_id=" + APIKey.id + "&app_key=" + APIKey.key + "&results_per_page=20&what=javascript%20developer&content-type=application/json")
-        //activityIndicator.startAnimating()
+        let apiStart = "http://api.adzuna.com/v1/api/jobs/gb/search/1?app_id="
+        
+        //currently only fetching 30 results -> results_per_page
+        let url = URL(string: apiStart + APIKey.id + "&app_key=" + APIKey.key + "&results_per_page=30&what=" + (jobTitle ?? "") + "&content-type=application/json")
+        activityIndicator.startAnimating()
         
         if let url = url {
             let task = session.dataTask(with: url, completionHandler: { [self]data, response, error in
@@ -59,7 +89,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                     
                     DispatchQueue.main.async {
                         jobAdsTableView.reloadData()
-                        //activityIndicator.stopAnimating()
+                        activityIndicator.stopAnimating()
                     }
                 }
             })
@@ -68,6 +98,8 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         }
     }
 
+    // MARK: - Table View functions
+    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return jobResult.results.count
     }
@@ -77,15 +109,40 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
             return UITableViewCell()
         }
         
+        // some date formatting for the api date string to apply to the German date form
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "YYYY-MM-dd'T'HH:mm:ssZ"
+        let dateString = jobResult.results[indexPath.row].created
+        let newDate = dateFormatter.date(from: dateString)
+        dateFormatter.dateFormat = "d.M.yyyy HH:mm"
+        var correctDateString = "Unknown"
+        
+        if let date = newDate {
+            correctDateString = dateFormatter.string(from: date)
+        }
+        
         cell.titleLabel.text = jobResult.results[indexPath.row].title
         cell.descriptionLabel.text = jobResult.results[indexPath.row].description
         cell.minSalaryLabel.text = "Min sal: " + String(jobResult.results[indexPath.row].salary_min)
         cell.maxSalaryLabel.text = "Max cal: " + String(jobResult.results[indexPath.row].salary_max)
         cell.locationLabel.text = "Location: " + jobResult.results[indexPath.row].location.display_name
         cell.companyLabel.text = "Company: " + jobResult.results[indexPath.row].company.display_name
-        cell.createdLabel.text = "Created at: " + jobResult.results[indexPath.row].created
+        cell.createdLabel.text = "Created at: " + correctDateString
         
         return cell
+    }
+    
+    // MARK: - Search Bar functions
+    
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        // in an http query spaces have to be replaced using '%20'
+        var searchText = searchBar.text
+        searchText = searchText?.replacingOccurrences(of: " ", with: "%20")
+        loadJobAds(jobTitle: searchText)
+    }
+    
+    func updateSearchResults(for searchController: UISearchController) {
+        print("search update")
     }
 }
 
@@ -122,7 +179,6 @@ struct JobAd {
         case created
         case category
         case company
-        //case contract_type
     }
     
     let id: String
@@ -132,11 +188,9 @@ struct JobAd {
     let salary_max: Double
     let location: Location
     let salary_is_predicted: String
-    // Date might cause a problem
     let created: String
     let category: Category
     let company: Company
-    //let contract_type: String
 }
 
 extension JobAd : Decodable {
@@ -153,7 +207,6 @@ extension JobAd : Decodable {
         let createdResult = try container.decode(String.self, forKey: .created)
         let categoryResult = try container.decode(Category.self, forKey: .category)
         let companyResult = try container.decode(Company.self, forKey: .company)
-        //let contractTypeResult = try container.decode(String.self, forKey: .contract_type)
         
         id = idResult
         title = titleResult
@@ -165,7 +218,6 @@ extension JobAd : Decodable {
         created = createdResult
         category = categoryResult
         company = companyResult
-        //contract_type = contractTypeResult
     }
 }
 
