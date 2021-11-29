@@ -16,6 +16,7 @@
 		94C01B122754FB5B0007AC39 /* JobAdsProjectTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94C01B112754FB5B0007AC39 /* JobAdsProjectTests.swift */; };
 		94C01B1C2754FB5B0007AC39 /* JobAdsProjectUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94C01B1B2754FB5B0007AC39 /* JobAdsProjectUITests.swift */; };
 		94C01B1E2754FB5B0007AC39 /* JobAdsProjectUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94C01B1D2754FB5B0007AC39 /* JobAdsProjectUITestsLaunchTests.swift */; };
+		94C01B2B275504D10007AC39 /* APIKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94C01B2A275504D10007AC39 /* APIKey.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -49,6 +50,7 @@
 		94C01B172754FB5B0007AC39 /* JobAdsProjectUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = JobAdsProjectUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		94C01B1B2754FB5B0007AC39 /* JobAdsProjectUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JobAdsProjectUITests.swift; sourceTree = "<group>"; };
 		94C01B1D2754FB5B0007AC39 /* JobAdsProjectUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JobAdsProjectUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		94C01B2A275504D10007AC39 /* APIKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIKey.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -106,6 +108,7 @@
 				94C01B032754FB5B0007AC39 /* Assets.xcassets */,
 				94C01B052754FB5B0007AC39 /* LaunchScreen.storyboard */,
 				94C01B082754FB5B0007AC39 /* Info.plist */,
+				94C01B2A275504D10007AC39 /* APIKey.swift */,
 			);
 			path = JobAdsProject;
 			sourceTree = "<group>";
@@ -260,6 +263,7 @@
 			files = (
 				94C01AFF2754FB590007AC39 /* ViewController.swift in Sources */,
 				94C01AFB2754FB590007AC39 /* AppDelegate.swift in Sources */,
+				94C01B2B275504D10007AC39 /* APIKey.swift in Sources */,
 				94C01AFD2754FB590007AC39 /* SceneDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
