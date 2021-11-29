@@ -1,0 +1,6 @@
+framework module Pods_JobAdsProjectTests {
+  umbrella header "Pods-JobAdsProjectTests-umbrella.h"
+
+  export *
+  module * { export * }
+}
