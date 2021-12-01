@@ -46,6 +46,8 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
       return searchController.searchBar.text?.isEmpty ?? true
     }
     
+    let country : String = "gb"
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -63,10 +65,10 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     }
     
     func loadJobAds(jobTitle: String?) {
-        print("job title: " + (jobTitle ?? ""))
+        //print("job title: " + (jobTitle ?? ""))
         let session = URLSession.shared
         
-        let apiStart = "http://api.adzuna.com/v1/api/jobs/gb/search/1?app_id="
+        let apiStart = "http://api.adzuna.com/v1/api/jobs/" + country + "/search/1?app_id="
         
         //currently only fetching 30 results -> results_per_page
         let url = URL(string: apiStart + APIKey.id + "&app_key=" + APIKey.key + "&results_per_page=30&what=" + (jobTitle ?? "") + "&content-type=application/json")
@@ -74,11 +76,11 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         
         if let url = url {
             let task = session.dataTask(with: url, completionHandler: { [self]data, response, error in
-                print(response?.description ?? "")
+                //print(response?.description ?? "")
                 if let data = data {
-                    print(String(decoding: data, as: UTF8.self))
+                    //print(String(decoding: data, as: UTF8.self))
                     let result = try? JSONDecoder().decode(JobAdResult.self, from: data)
-                    print(result ?? [])
+                    //print(result ?? [])
                     
                     guard let jobRes = result
                     else {
@@ -123,8 +125,8 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         
         cell.titleLabel.text = jobResult.results[indexPath.row].title
         cell.descriptionLabel.text = jobResult.results[indexPath.row].description
-        cell.minSalaryLabel.text = "Min sal: " + String(jobResult.results[indexPath.row].salary_min)
-        cell.maxSalaryLabel.text = "Max cal: " + String(jobResult.results[indexPath.row].salary_max)
+        cell.minSalaryLabel.text = "Min salary: " + String(jobResult.results[indexPath.row].salary_min ?? 0)
+        cell.maxSalaryLabel.text = "Max salary: " + String(jobResult.results[indexPath.row].salary_max ?? 0)
         cell.locationLabel.text = "Location: " + jobResult.results[indexPath.row].location.display_name
         cell.companyLabel.text = "Company: " + jobResult.results[indexPath.row].company.display_name
         cell.createdLabel.text = "Created at: " + correctDateString
@@ -143,6 +145,20 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     
     func updateSearchResults(for searchController: UISearchController) {
         print("search update")
+    }
+    
+    
+    // MARK: - Navigation
+
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        print("in prepare function")
+        // Get the new view controller using segue.destination.
+        // Pass the selected object to the new view controller.
+        
+        if let nextViewController = segue.destination as? StatisticsViewController {
+            print("setting statistics controller data")
+            nextViewController.jobTitle = (jobTitleSearchBar.text ?? " ").replacingOccurrences(of: " ", with: "%20")
+        }
     }
 }
 
@@ -184,8 +200,8 @@ struct JobAd {
     let id: String
     let title: String
     let description: String
-    let salary_min: Double
-    let salary_max: Double
+    let salary_min: Double?
+    let salary_max: Double?
     let location: Location
     let salary_is_predicted: String
     let created: String
@@ -200,8 +216,8 @@ extension JobAd : Decodable {
         let idResult = try container.decode(String.self, forKey: .id)
         let titleResult = try container.decode(String.self, forKey: .title)
         let descResult = try container.decode(String.self, forKey: .description)
-        let salMinResult = try container.decode(Double.self, forKey: .salary_min)
-        let salMaxResult = try container.decode(Double.self, forKey: .salary_max)
+        let salMinResult = try? container.decode(Double?.self, forKey: .salary_min)
+        let salMaxResult = try? container.decode(Double?.self, forKey: .salary_max)
         let locationResult = try container.decode(Location.self, forKey: .location)
         let salIsPredResult = try container.decode(String.self, forKey: .salary_is_predicted)
         let createdResult = try container.decode(String.self, forKey: .created)
