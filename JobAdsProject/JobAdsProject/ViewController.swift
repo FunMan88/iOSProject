@@ -7,6 +7,8 @@
 
 import UIKit
 
+// MARK: - JobAdCell for the TableView
+
 class JobAdCell : UITableViewCell {
     override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
@@ -31,6 +33,8 @@ public class JobTitleSearchController : UISearchController {
     }
 
 }
+
+// MARK: - Actual 'main' View Controller class
 
 class ViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UISearchResultsUpdating, UISearchBarDelegate {
    
@@ -65,7 +69,6 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     }
     
     func loadJobAds(jobTitle: String?) {
-        //print("job title: " + (jobTitle ?? ""))
         let session = URLSession.shared
         
         let apiStart = "http://api.adzuna.com/v1/api/jobs/" + country + "/search/1?app_id="
@@ -76,11 +79,8 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         
         if let url = url {
             let task = session.dataTask(with: url, completionHandler: { [self]data, response, error in
-                //print(response?.description ?? "")
                 if let data = data {
-                    //print(String(decoding: data, as: UTF8.self))
                     let result = try? JSONDecoder().decode(JobAdResult.self, from: data)
-                    //print(result ?? [])
                     
                     guard let jobRes = result
                     else {
@@ -162,7 +162,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     }
 }
 
-// MARK: - Decodables
+// MARK: - Decodables for JobAd result
 
 struct JobAdResult {
     //only interested in results

@@ -25,27 +25,28 @@ class StatisticsViewController: UIViewController, ChartViewDelegate {
     
     var salaryDistributionResult: SalaryDistributionResult = SalaryDistributionResult(histogram: Histogram(distributions: []))
     
+    var salaryResult : MonthlyAverageSalaryResult = MonthlyAverageSalaryResult(month: SalaryResult(monthlySalData: []))
+    
     @IBOutlet weak var salDistView: UIView!
     
     @IBOutlet weak var jobTitleTextField: UITextField!
     @IBOutlet weak var countryTextField: UITextField!
     @IBOutlet weak var showResultsButton: UIButton!
     @IBOutlet weak var salDistLabel: UILabel!
+    @IBOutlet weak var avgSalLabel: UILabel!
+    @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         barChart.delegate = self
-        
+        activityIndicator.hidesWhenStopped = true
     }
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         barChart.frame = CGRect(x: 0, y: 0, width: salDistView.frame.size.width, height: salDistView.frame.size.width)
-        //barChart.center = salDistView.center
         barChart.xAxis.valueFormatter = SalDistAxisValueFormatter()
         salDistView.addSubview(barChart)
-        
-        //loadSalaryDistributionData()
     }
     
     @IBAction func showResultsButtonClicked(_ sender: Any) {
@@ -54,11 +55,11 @@ class StatisticsViewController: UIViewController, ChartViewDelegate {
         
         salDistLabel.text = "Salary Distribution"
         loadSalaryDistributionData()
+        loadAverageSalaryData()
     }
     
     
     func fillChartWithSalaryDistributionData() {
-        print("Entering bar chart function")
         var dataSetEntries : [BarChartDataEntry] = [BarChartDataEntry]()
         salaryDistributionResult.histogram.distributions.forEach{dist in
             dataSetEntries.append(BarChartDataEntry(x: (Double(dist.scale) ?? 0) / 10000, y: Double(dist.count)))
@@ -75,10 +76,16 @@ class StatisticsViewController: UIViewController, ChartViewDelegate {
         barChart.data = chartData
     }
     
+    func calculateAverageSalary() {
+        salaryResult.month.monthlySalData.sort { SalaryMonthData1, SalaryMonthData2 in
+            return SalaryMonthData1.date < SalaryMonthData2.date
+        }
+                
+        let avgSal : Double = salaryResult.month.monthlySalData.last?.avgSalary ?? 0
+        avgSalLabel.text = "Average Salary: " + String(avgSal)
+    }
     
     func loadSalaryDistributionData() {
-        //let country : String = "at"
-        print("job title from statistics: " + jobTitle)
         let session = URLSession.shared
         let id: String = "app_id=" + APIKey.id
         let key : String = "&app_key=" + APIKey.key
@@ -90,17 +97,13 @@ class StatisticsViewController: UIViewController, ChartViewDelegate {
         
         let apiRequest : String = apiStart + key +  filter + contentType
         
-        //let url = URL(string: apiStart + APIKey.id + "&app_key=" + APIKey.key + "&location0=" + country + "&what=" + jobTitle + contentType)
         let url = URL(string: apiRequest)
-        //activityIndicator.startAnimating()
+        activityIndicator.startAnimating()
         
         if let url = url {
             let task = session.dataTask(with: url, completionHandler: { [self]data, response, error in
-                print(response?.description ?? "")
                 if let data = data {
-                    print(String(decoding: data, as: UTF8.self))
                     let result = try? JSONDecoder().decode(SalaryDistributionResult.self, from: data)
-                    print(result ?? [])
                     
                     guard let salDistRes = result
                     else {
@@ -111,7 +114,43 @@ class StatisticsViewController: UIViewController, ChartViewDelegate {
                     
                     DispatchQueue.main.async {
                         fillChartWithSalaryDistributionData()
-                        //activityIndicator.stopAnimating()
+                        activityIndicator.stopAnimating()
+                    }
+                }
+            })
+            
+            task.resume()
+        }
+    }
+    
+    func loadAverageSalaryData() {
+        let session = URLSession.shared
+        let id: String = "app_id=" + APIKey.id
+        let key : String = "&app_key=" + APIKey.key
+        let location : String = "&location0=" + country
+        let filter : String = "&what=" + jobTitle
+
+        let apiStart : String = "http://api.adzuna.com/v1/api/jobs/" + country + "/history?" + id
+        let contentType : String = "&content-type=application/json"
+        
+        let apiRequest : String = apiStart + key +  filter + contentType
+        
+        let url = URL(string: apiRequest)
+        
+        if let url = url {
+            let task = session.dataTask(with: url, completionHandler: { [self]data, response, error in
+                if let data = data {
+                    let result = try? JSONDecoder().decode(MonthlyAverageSalaryResult.self, from: data)
+                    
+                    guard let salAvgRes = result
+                    else {
+                        return;
+                    }
+
+                    self.salaryResult = salAvgRes
+                    
+                    DispatchQueue.main.async {
+                        calculateAverageSalary()
                     }
                 }
             })
@@ -131,6 +170,8 @@ class StatisticsViewController: UIViewController, ChartViewDelegate {
     */
 
 }
+
+// MARK: - Decodables for Distribution
 
 struct SalaryDistributionResult {
         enum CodingKeys: String, CodingKey {
@@ -198,6 +239,74 @@ struct DistributionUnit : Decodable {
     init(scale: String, count: Int) {
         self.scale = scale
         self.count = count
+    }
+}
+
+// MARK: Decodables for Average Monthly Salary
+
+struct MonthlyAverageSalaryResult {
+    enum CodingKeys: String, CodingKey {
+        case month
+    }
+    
+    var month: SalaryResult
+}
+
+extension MonthlyAverageSalaryResult : Decodable {
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        
+        let salResult = try container.decode(SalaryResult.self, forKey: .month)
+        
+        month = salResult
+    }
+}
+
+struct SalaryResult {
+    var monthlySalData: [SalaryMonthData]
+
+    private struct DynamicCodingKeys: CodingKey {
+        var stringValue: String
+        var intValue: Int?
+        var doubleValue: Double?
+        
+        init?(intValue: Int) {
+            return nil
+        }
+        
+        init?(doubleValue: Double) {
+            return nil
+        }
+        
+        init?(stringValue: String) {
+            self.stringValue = stringValue
+        }
+    }
+}
+
+extension SalaryResult : Decodable {
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: DynamicCodingKeys.self)
+        
+        var salMonthData = [SalaryMonthData]()
+        
+        for key in container.allKeys {
+            let decodedObject = try container.decode(Double.self, forKey: DynamicCodingKeys(stringValue: key.stringValue)!)
+            salMonthData.append(SalaryMonthData(date: key.stringValue, avgSalary: decodedObject))
+        }
+        
+        monthlySalData = salMonthData
+    }
+}
+
+struct SalaryMonthData : Decodable {
+    
+    let date: String
+    let avgSalary: Double
+    
+    init(date: String, avgSalary: Double) {
+        self.date = date
+        self.avgSalary = avgSalary
     }
 }
 
