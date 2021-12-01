@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		068433595EBCE81754ABC4B6 /* Pods_JobAdsProject.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7EAB9D1171F1EECF94219531 /* Pods_JobAdsProject.framework */; };
 		24FD47662655B0C8E7C220D3 /* Pods_JobAdsProject_JobAdsProjectUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE3970BFC0A826FF79F5B694 /* Pods_JobAdsProject_JobAdsProjectUITests.framework */; };
+		940E5D812757F24D002078A4 /* TopEmployersViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 940E5D802757F24D002078A4 /* TopEmployersViewController.swift */; };
 		94C01AFB2754FB590007AC39 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94C01AFA2754FB590007AC39 /* AppDelegate.swift */; };
 		94C01AFD2754FB590007AC39 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94C01AFC2754FB590007AC39 /* SceneDelegate.swift */; };
 		94C01AFF2754FB590007AC39 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94C01AFE2754FB590007AC39 /* ViewController.swift */; };
@@ -50,6 +51,7 @@
 		714434606EA2ABE4D38A18B4 /* Pods-JobAdsProjectTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-JobAdsProjectTests.release.xcconfig"; path = "Target Support Files/Pods-JobAdsProjectTests/Pods-JobAdsProjectTests.release.xcconfig"; sourceTree = "<group>"; };
 		7E7057A4B7F3A6AC1C1DD542 /* Pods-JobAdsProject.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-JobAdsProject.debug.xcconfig"; path = "Target Support Files/Pods-JobAdsProject/Pods-JobAdsProject.debug.xcconfig"; sourceTree = "<group>"; };
 		7EAB9D1171F1EECF94219531 /* Pods_JobAdsProject.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_JobAdsProject.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		940E5D802757F24D002078A4 /* TopEmployersViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TopEmployersViewController.swift; sourceTree = "<group>"; };
 		94C01AF72754FB590007AC39 /* JobAdsProject.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = JobAdsProject.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		94C01AFA2754FB590007AC39 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		94C01AFC2754FB590007AC39 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -142,6 +144,7 @@
 				94C01B082754FB5B0007AC39 /* Info.plist */,
 				94C01B2A275504D10007AC39 /* APIKey.swift */,
 				94C01B2E27557EFE0007AC39 /* StatisticsViewController.swift */,
+				940E5D802757F24D002078A4 /* TopEmployersViewController.swift */,
 			);
 			path = JobAdsProject;
 			sourceTree = "<group>";
@@ -173,7 +176,6 @@
 				618666806A453549C5772994 /* Pods-JobAdsProjectTests.debug.xcconfig */,
 				714434606EA2ABE4D38A18B4 /* Pods-JobAdsProjectTests.release.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};
@@ -419,6 +421,7 @@
 				94C01AFF2754FB590007AC39 /* ViewController.swift in Sources */,
 				94C01AFB2754FB590007AC39 /* AppDelegate.swift in Sources */,
 				94C01B2D27557A300007AC39 /* TabBarControllerViewController.swift in Sources */,
+				940E5D812757F24D002078A4 /* TopEmployersViewController.swift in Sources */,
 				94C01B2F27557EFE0007AC39 /* StatisticsViewController.swift in Sources */,
 				94C01B2B275504D10007AC39 /* APIKey.swift in Sources */,
 				94C01AFD2754FB590007AC39 /* SceneDelegate.swift in Sources */,

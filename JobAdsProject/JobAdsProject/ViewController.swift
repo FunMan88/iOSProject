@@ -134,6 +134,59 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         return cell
     }
     
+    @IBAction func highesSalButtonClicked(_ sender: Any) {
+        if let highestSalAd = getHighestSalaryAd() {
+            print(highestSalAd)
+        } else {
+            return
+        }
+    }
+    
+    func getHighestSalaryAd() -> JobAd? {
+        var newList = jobResult.results.sorted { JobAd, JobAd2 in
+            var jobAdSal : Double
+            
+            let job1Avg : Double = averageSalary(min: JobAd.salary_min, max: JobAd.salary_max)
+            let job2Avg : Double = averageSalary(min: JobAd2.salary_min, max: JobAd2.salary_max)
+            
+            return job1Avg < job2Avg
+        }
+        
+        return newList.last
+    }
+    
+    func averageSalary(min: Double?, max: Double?) -> Double {
+        if let min_unwr = min {
+            if let max_unwr = max {
+                return averageOf(numbers: min_unwr, max_unwr)
+            } else {
+                return min_unwr
+            }
+        } else {
+            if let max_unwr = max {
+                return max_unwr
+            } else {
+                return 0
+            }
+        }
+    }
+    
+    func averageOf(numbers: Double...) -> Double {
+        var numberTotal = numbers.count
+        
+        if numberTotal == 0 {
+            return 0
+        }
+        
+        var sum : Double = 0
+
+        for number in numbers {
+            sum += number
+        }
+        
+        return Double(sum)/Double(numberTotal)
+    }
+    
     // MARK: - Search Bar functions
     
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
