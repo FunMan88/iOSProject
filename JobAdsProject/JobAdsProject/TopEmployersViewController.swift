@@ -48,7 +48,6 @@ class TopEmployersViewController: UIViewController, UITableViewDataSource, UITab
         let session = URLSession.shared
         let id: String = "app_id=" + APIKey.id
         let key : String = "&app_key=" + APIKey.key
-        let location : String = "&location0=" + country
         let filter : String = "&what=" + jobTitle
 
         let apiStart : String = "http://api.adzuna.com/v1/api/jobs/" + country + "/top_companies?" + id

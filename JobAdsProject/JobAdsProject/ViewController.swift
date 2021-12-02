@@ -40,9 +40,13 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
    
     var jobResult: JobAdResult = JobAdResult(results: [])
     
+    var highestSalaryAd: JobAd?
+    var highestSal: Double = 0
+    
     @IBOutlet weak var jobAdsTableView: UITableView!
     @IBOutlet weak var jobTitleSearchBar: UISearchBar!
     @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
+    @IBOutlet weak var highestSalButton: UIButton!
     
     let searchController = JobTitleSearchController()
     
@@ -59,14 +63,23 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         
         jobAdsTableView.delegate = self
         jobAdsTableView.dataSource = self
+        jobAdsTableView.allowsSelection = true
+        jobAdsTableView.isUserInteractionEnabled = true
         
         searchController.jobTitleSearchBar = jobTitleSearchBar
         searchController.searchResultsUpdater = self
         searchController.searchBar.delegate = self
         definesPresentationContext = true
         
+        self.tabBarController?.tabBar.inputViewController?.hidesBottomBarWhenPushed = false
+        
         loadJobAds(jobTitle: nil)
     }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+           super.viewWillDisappear(animated)
+           self.tabBarController?.tabBar.isHidden = false
+        }
     
     func loadJobAds(jobTitle: String?) {
         let session = URLSession.shared
@@ -76,6 +89,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         //currently only fetching 30 results -> results_per_page
         let url = URL(string: apiStart + APIKey.id + "&app_key=" + APIKey.key + "&results_per_page=30&what=" + (jobTitle ?? "") + "&content-type=application/json")
         activityIndicator.startAnimating()
+        highestSalButton.isEnabled = false
         
         if let url = url {
             let task = session.dataTask(with: url, completionHandler: { [self]data, response, error in
@@ -92,6 +106,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                     DispatchQueue.main.async {
                         jobAdsTableView.reloadData()
                         activityIndicator.stopAnimating()
+                        highestSalButton.isEnabled = true
                     }
                 }
             })
@@ -134,16 +149,26 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         return cell
     }
     
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+                jobAdsTableView.deselectRow(at: indexPath, animated: true)
+        
+                let jobAd : JobAd = jobResult.results[indexPath.row]
+                performSegue(withIdentifier: "CellClickSegue", sender: jobAd)
+       }
+    
     @IBAction func highesSalButtonClicked(_ sender: Any) {
         if let highestSalAd = getHighestSalaryAd() {
-            print(highestSalAd)
+            highestSalaryAd = highestSalAd
+            highestSal = averageSalary(min: highestSalaryAd?.salary_min, max: highestSalAd.salary_max)
         } else {
             return
         }
     }
     
+    // MARK: - Highest Salary Functions
+    
     func getHighestSalaryAd() -> JobAd? {
-        var newList = jobResult.results.sorted { JobAd, JobAd2 in
+        let newList = jobResult.results.sorted { JobAd, JobAd2 in
             var jobAdSal : Double
             
             let job1Avg : Double = averageSalary(min: JobAd.salary_min, max: JobAd.salary_max)
@@ -200,18 +225,28 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         print("search update")
     }
     
-    
     // MARK: - Navigation
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         print("in prepare function")
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
         
-        if let nextViewController = segue.destination as? StatisticsViewController {
-            print("setting statistics controller data")
-            nextViewController.jobTitle = (jobTitleSearchBar.text ?? " ").replacingOccurrences(of: " ", with: "%20")
+        if (segue.identifier == "HighestSalSegue") {
+            if let nextViewController = segue.destination as? HighestSalaryJobViewController {
+                nextViewController.highestSalaryAd = highestSalaryAd
+                nextViewController.highestSalary = highestSal
+            }
         }
+        
+        if (segue.identifier == "CellClickSegue") {
+            print("in cell click prepare")
+            if let nextViewController = segue.destination as? HighestSalaryJobViewController {
+                if let jobAd : JobAd = sender as? JobAd {
+                    nextViewController.highestSalaryAd = jobAd
+                    nextViewController.highestSalary = averageSalary(min: jobAd.salary_min, max: jobAd.salary_max)
+                }
+            }
+        }
+        
     }
 }
 
@@ -248,6 +283,8 @@ struct JobAd {
         case created
         case category
         case company
+        case longitude
+        case latitude
     }
     
     let id: String
@@ -260,6 +297,8 @@ struct JobAd {
     let created: String
     let category: Category
     let company: Company
+    let longitude: Double?
+    let latitude: Double?
 }
 
 extension JobAd : Decodable {
@@ -276,6 +315,8 @@ extension JobAd : Decodable {
         let createdResult = try container.decode(String.self, forKey: .created)
         let categoryResult = try container.decode(Category.self, forKey: .category)
         let companyResult = try container.decode(Company.self, forKey: .company)
+        let longitudeResult = try? container.decode(Double?.self, forKey: .longitude)
+        let latitudeResult = try? container.decode(Double?.self, forKey: .latitude)
         
         id = idResult
         title = titleResult
@@ -287,6 +328,8 @@ extension JobAd : Decodable {
         created = createdResult
         category = categoryResult
         company = companyResult
+        longitude = longitudeResult
+        latitude = latitudeResult
     }
 }
 
